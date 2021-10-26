@@ -17,15 +17,14 @@ export cleandir=${prefix}/outputs/r_HCP_clean/cleaned_data
 #load modules needed to run the cleaning
 #runs with R, gnu-parallel and python
 ##python environment is loaded with connectome-workbench/1.3.2 and ciftify modules
-# module load intel/2019u4
-# module load gcc/9.2.0
-# module load r/4.0.3
-# module load gnu-parallel/20191122
+module load intel/2019u4
+module load gcc/9.2.0
+module load r/4.0.3
+module load gnu-parallel/20191122
 #source activate ciftify2.3.3_bspace
 #module load singularity/3
 
-# parallel --nn -j80 --keep-order \
-    echo \
+parallel --nn -j80 --keep-order \
          'indir='${basedir}'/{1}
           outdir='${cleandir}'/{1}
           mkdir -p ${indir} ${outdir}
