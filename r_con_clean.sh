@@ -28,7 +28,7 @@ parallel --nn -j80 --keep-order \
          'indir='${basedir}'/{1}
           outdir='${cleandir}'/{1}
           mkdir -p ${indir} ${outdir}
-          '${prefix}'/code/merge_HCPtxt_fixed.R '${outdir} ${indir}/'{2}' \
+          '${prefix}'/code/merge_HCPtxt_fixed.R ${outdir} ${indir}/{2}' \
          :::: ${prefix}/code/r_test_sub.txt \
          ::: "rfMRI_REST1_LR" "rfMRI_REST1_RL" \
              "rfMRI_REST2_LR" "rfMRI_REST2_RL"
