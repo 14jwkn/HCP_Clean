@@ -1,0 +1,6 @@
+{
+  "--cf-cols": "global_signal",
+  "--cf-sq-cols": "global_signal",
+  "--cf-td-cols": "global_signal",
+  "--cf-sqtd-cols": "global_signal"
+ }

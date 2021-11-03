@@ -1,0 +1,2 @@
+rfMRI_*_CleanedMGT.txt
+

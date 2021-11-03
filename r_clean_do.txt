@@ -1,0 +1,81 @@
+#Usage: bash <scriptname> <subject ID> <confound names>
+
+#Collect input with names.
+sub=${1}
+cons=${2}
+
+#CIFTIFY tool.
+cifsimg=../containers/tigrlab_fmriprep_ciftify_v1.3.2-2.3.3-2019-08-16-c0fcb37f1b56.simg
+
+#Directories of the input fMRI and confound data.
+fmridir=../inputs/data/fmri/$sub
+condir=../inputs/data/confounds/$sub
+
+#Directory of output cleaned fMRI data.
+cleandir=../outputs/r_clean/$sub
+
+#Do cleaning only if output doesn't already exist.
+if [ -d "$cleandir" ]
+then
+	echo "$sub exists"
+else	
+	echo "Doing $sub"
+
+	#Create output path.
+	mkdir $cleandir
+	
+	#For each run.
+	for run in $condir/*
+	do
+
+		#Remove folder path.
+        	run=$(basename $run)
+		echo "Doing $run"
+		
+		#Create a temporary TSV for the selected confounds. First join the files.
+		sing_names=$(cat $cons)
+		group_names=""
+		for sing in $sing_names
+		do
+        		group_names="$group_names $condir/$run/$sing"
+		done
+		paste $group_names > $condir/$run/temp.tsv
+
+		#Replace all spaces with tabs.
+		awk -v OFS="\t" '$1=$1' $condir/$run/temp.tsv > $condir/$run/temp_tab.tsv
+
+		#Add column names.
+		#( echo -e "trans_x\t\
+		        #trans_y\t\
+       			#trans_z\t\
+		        #rot_x\t\
+		        #rot_y\t\
+		        #rot_z\t\
+		        #trans_dx\t\
+		        #trans_dy\t\
+		        #trans_dz\t\
+		        #rot_dx\t\
+		        #rot_dy\t\
+		        #rot_dz\t\
+		        #white_matter\t\
+        		#csf\t\
+        		#global_signal"; cat $condir/$run/temp_tab.tsv ) > $condir/$run/temp_tab_named.tsv
+    		( echo -e "global_signal"; cat $condir/$run/temp_tab.tsv ) > $condir/$run/temp_tab_named.tsv
+		
+		#Do cleaning with json options selected.
+		singularity exec \
+			-B $cleandir:/cleaned \
+			-B .:/json \
+			-B $condir/$run:/contsv \
+			-B $fmridir:/fmri \
+			$cifsimg ciftify_clean_img \
+				--output-file=/cleaned/postproc_${run}_Atlas_MSMAll_hp2000_clean.dtseries.nii \
+				--clean-config=/json/r_confound.json \
+				--confounds-tsv=/contsv/temp_tab_named.tsv \
+				/fmri/${run}_Atlas_MSMAll_hp2000_clean.dtseries.nii
+		
+		#Delete temporary TSVs generated.
+		rm -f $condir/$run/temp.tsv $condir/$run/temp_tab.tsv $condir/$run/temp_tab_named.tsv
+	done
+fi
+
